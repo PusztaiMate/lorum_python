@@ -5,8 +5,7 @@
     <ProjectGuid>f8127669-88d9-47ad-88a6-89ed0266a4e3</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>lorum_refractored.py</StartupFile>
-    <SearchPath>
-    </SearchPath>
+    <SearchPath>..\..\..\lorum_refractored</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>lorum_refractored</Name>
@@ -21,6 +20,18 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Deck.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Game.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Player.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TableDeck.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="lorum_refractored.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
