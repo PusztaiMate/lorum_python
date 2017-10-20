@@ -46,6 +46,9 @@ class Deck:
     def __len__(self):
         return len(self.cards)
 
+    def __bool__(self):
+        return len(self.cards) != 0
+
     def draw(self):
         return self.cards.pop(random.randint(0, len(self) - 1))
 
@@ -64,17 +67,17 @@ class HungarianDeck(Deck):
                       for number in HungarianDeck.numbers]
 
 
-    @staticmethod
-    def next_card(card):
+    @classmethod
+    def next_card(cls, card):
         if card is None:
             return None
         suit = card.suit
         if card.number == 'Ász':
             number = 'VII'
         else:
-            index = HungarianDeck.numbers.index(card.number)
+            index = cls.numbers.index(card.number)
             index += 1
-            number = HungarianDeck.numbers[index]
+            number = cls.numbers[index]
         return Card(suit, number)
 
 if __name__ == '__main__':

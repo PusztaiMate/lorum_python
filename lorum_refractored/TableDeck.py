@@ -1,6 +1,6 @@
 '''the deck that collects the cards'''
 
-from Deck import Deck, HungarianDeck, TooManyCards, InvalidCard
+from Deck import Card, Deck, HungarianDeck, TooManyCards, InvalidCard
 
 class TableDeck(Deck):
     def __init__(self, suit):
@@ -32,4 +32,6 @@ class TableDeck(Deck):
         curr = self.curr_card()
         return HungarianDeck.next_card(curr)
 
+    def clear_cards(self):
+        self.cards.clear()
 
