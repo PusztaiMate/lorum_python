@@ -2,7 +2,7 @@
 
 from Deck import Card, Deck, HungarianDeck, TooManyCards, InvalidCard
 
-class TableDeck(Deck):
+class Pile(Deck):
     def __init__(self, suit):
         Deck.__init__(self)
         self.suit = suit

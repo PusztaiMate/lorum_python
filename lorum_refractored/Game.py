@@ -3,7 +3,7 @@
 from random import randint
 
 from Deck import HungarianDeck
-from TableDeck import TableDeck
+from Pile import Pile
 from Player import Player
 from Bot import Bot
 
@@ -13,7 +13,7 @@ class Game:
     NUMBER_OF_PLAYERS = 4
 
     def __init__(self):
-        self.tabledecks = [TableDeck(suit) for suit in HungarianDeck.suits]
+        self.piles = [Pile(suit) for suit in HungarianDeck.suits]
         self.setup_players()
 
         self.is_first_card = True
@@ -23,10 +23,10 @@ class Game:
     def handle_first_card(self):
         '''handles the first round of the game'''
         card = self.players[self.on_turn].choose_card(self)
-        for tdeck in self.tabledecks:
-            if tdeck.suit == card.suit:
-                tdeck.get_card(card)
-            tdeck.starting_num = card.number
+        for pile in self.piles:
+            if pile.suit == card.suit:
+                pile.get_card(card)
+            pile.starting_num = card.number
         self.on_turn = (self.on_turn + 1) % self.NUMBER_OF_PLAYERS
 
     def handle_buy(self):
@@ -72,9 +72,9 @@ class Game:
         '''puts the card on the correct tabledeck'''
         if card is None:
             return
-        for tdeck in self.tabledecks:
-            if tdeck.suit == card.suit:
-                tdeck.get_card(card)
+        for pile in self.piles:
+            if pile.suit == card.suit:
+                pile.get_card(card)
 
     def next_player_index(self):
         '''index of the next player'''
@@ -111,7 +111,7 @@ class Game:
             self.evaluate_points()
             game_over = self.ask_if_over()
             self.starter = (self.starter + 1) % self.NUMBER_OF_PLAYERS
-            for tdeck in self.tabledecks:
+            for tdeck in self.piles:
                 tdeck.clear_cards()
 
     def ask_if_over(self):
@@ -140,13 +140,13 @@ class Game:
 
     def legal_cards(self):
         '''cards that can be played out'''
-        return [td.next_card() for td in self.tabledecks]
+        return [pile.next_card() for pile in self.piles]
 
     def current_cards(self):
         re_val = []
-        for tdeck in self.tabledecks:
-            if tdeck:
-                re_val.append(tdeck[len(tdeck) - 1])
+        for pile in self.piles:
+            if pile:
+                re_val.append(pile[len(pile) - 1])
         return re_val
 
 if __name__ == '__main__':

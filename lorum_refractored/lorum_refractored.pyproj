@@ -35,7 +35,7 @@
     <Compile Include="PlayerABC.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="TableDeck.py">
+    <Compile Include="Pile.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
