@@ -1,5 +1,5 @@
 ''' the module that consists the bot for the game '''
-
+from collections import OrderedDict
 from random import choice
 from PlayerABC import PlayerABC
 from Deck import HungarianDeck, Card
@@ -40,8 +40,6 @@ class BotLevel1(PlayerABC):
             handler.is_first_card = False
             return chosen_card
         for card in self.cards:
-            print('card:', card, type(card), sep='--')
-            print('legal_cards', legal_cards, type(legal_cards), sep='--')
             if card in legal_cards:
                 own_legal_moves.append(card)
 
@@ -81,20 +79,86 @@ class BotLevel2(PlayerABC):
         self.cards = []
         self.points = 0
 
+    def __len__(self):
+        return len(self.cards)
+
     def bid(self):
-        pass
+        '''returns the number of points the bot is willing to give
+        to have the right to start'''
+        possible_holes =  self.calculate_sum_dist(self.get_starting_card())
+        self.say('I give', 20 - possible_holes, 'for the right to start!')
+        return 20 - possible_holes
 
     @property
     def name(self):
-        super().name()
+        return super().name
+
+    def get_starting_card(self):
+        '''chooses the starting card and returns it'''
+        best_cards = self.best_starting_cards()
+        # remove if we only have one card of the suit & it's not a big diff
+        # TODO: get statistics about this and have a better guess
+        lonely_suits = []
+        for suit, num_of_cards in self.cards_per_suit().items():
+            if num_of_cards == 1:
+                lonely_suits.append(suit)
+        # TODO: this one below
+        # ~the amount of less points if we start with lonely card:
+        # LONELY = 3
+        # since best_cards is an OrderedDict we can do this:
+        examined_card = None
+        while True:
+            examined_card = best_cards.popitem(last=False)[0]
+            suit = examined_card.split(' ')[0]
+            if suit not in lonely_suits:
+                break
+        return Card.from_string(examined_card)
+
+    def get_possible_cards(self, handler):
+        '''returns the cards that can be played out'''
+        nexts_on_pile = handler.legal_cards()
+        pos_crds = [card for card in nexts_on_pile if card in self.cards]
+        return pos_crds
 
     def choose_card(self, handler):
         '''chooses a legal card from the hand and gives it to the handler'''
-        pass
+        if handler.is_first_card:
+            return self.get_starting_card()
+        # if it's not the first round:
+        possible_cards = self.get_possible_cards(handler)
+        # if the bot has no options
+        if not possible_cards:
+            msg = choice(('Pass!', 'Go on without me!', "Resting this round"))
+            self.say(msg)
+            return None
+        # if we have only one option:
+        if len(possible_cards) == 1:
+            chosen_card = possible_cards[0]
+            self.cards.remove(chosen_card)
+            self.say('playing out:', chosen_card)
+            return chosen_card
+
+        chosen_card = self.pick_best_card(possible_cards)
+        self.say('playing out:', chosen_card)
+        self.cards.remove(chosen_card)
+        return chosen_card
+
+    def pick_best_card(self, possible_cards):
+        '''picks wich card to play out and returns it'''
+        cards_p_suit = self.cards_per_suit()
+        chosen_card = possible_cards[0]
+        for ccard in possible_cards:
+            if cards_p_suit[ccard.suit] > cards_p_suit[chosen_card.suit]:
+                chosen_card = ccard
+        return chosen_card
 
     def clear_hand(self):
         '''clear the remaining cards from the hand'''
         self.cards.clear()
+
+    def say(self, *msg, **kwargs):
+        '''appends '"NAME": ... in front of the message'''
+        print(self.name + ':', *msg, **kwargs)
 
     def get_card(self, card):
         self.cards.append(card)
@@ -137,27 +201,8 @@ class BotLevel2(PlayerABC):
 
     def best_starting_cards(self):
         '''gives the 3 "best" starting option'''
-        hole_per_card = {str(card) : self.calculate_sum_dist(card) for card in self.cards}
-        while len(hole_per_card) > 3:
-            highest_val = max(hole_per_card.values())
-            highest_key = None
-            for kkey, vval in hole_per_card.items():
-                if vval == highest_val:
-                    highest_key = kkey
-            hole_per_card.__delitem__(highest_key)
-        return hole_per_card
-
-if __name__ == '__main__':
-    deck = HungarianDeck()
-    bot = BotLevel2('Test_Bot')
-    for _ in range(8):
-        bot.get_card(deck.draw())
-    bot.cards = sorted(bot.cards)
-    for card in bot.cards:
-        print(card, end=' | ')
-    print()
-    for card in bot.cards:
-        print('Number of holes with', card, ':', bot.calculate_sum_dist(card))
-    print('best_starting_cards():')
-    for k, card in bot.best_starting_cards().items():
-        print(k, sep=' | ', end=' ')
+        holes = dict()
+        for card in self.cards:
+            holes[str(card)] = self.calculate_sum_dist(card)
+        ordered_hpc = OrderedDict(sorted(holes.items(), key=lambda t: t[1]))
+        return ordered_hpc

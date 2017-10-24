@@ -5,7 +5,7 @@ from random import randint
 from Deck import HungarianDeck
 from Pile import Pile
 from Player import Player
-from Bot import BotLevel1
+from Bot import BotLevel1, BotLevel2
 
 class Game:
     """description of class"""
@@ -37,7 +37,6 @@ class Game:
         turn_since_hb = 0
 
         while turn_since_hb <= self.NUMBER_OF_PLAYERS -1:
-            print('self.on_turn', self.on_turn)
             index = (index + 1) % self.NUMBER_OF_PLAYERS
             turn_since_hb += 1
             if index != self.on_turn:
@@ -46,13 +45,10 @@ class Game:
                     highest_bidder = index
                     highest_bid = player_bid
                     turn_since_hb = 0
-
-        print('self.on_turn=', self.on_turn)
         if self.players[self.on_turn].is_selling(highest_bid):
             self.players[self.on_turn].points += highest_bid
             self.players[highest_bidder].points -= highest_bid
             self.on_turn = highest_bidder
-
             for player in self.players:
                 print(player.name, ':', player.points, 'point(s)')
 
@@ -101,7 +97,9 @@ class Game:
         '''from dealing the cards to eval. the points'''
         game_over = False
         self.is_first_card = True
-        while not game_over:
+        # while not game_over:
+        i = 0
+        while i < 100:
             self.on_turn = self.starter
             self.deal()
             self.handle_buy()
@@ -110,7 +108,8 @@ class Game:
                 self.is_first_card = False
             self.handle_rounds()
             self.evaluate_points()
-            game_over = self.ask_if_over()
+            # game_over = self.ask_if_over()
+            i += 1
             self.starter = (self.starter + 1) % self.NUMBER_OF_PLAYERS
             for tdeck in self.piles:
                 tdeck.clear_cards()
@@ -124,11 +123,11 @@ class Game:
 
     def setup_players(self):
         '''initialazing players and bots'''
-        human_players = 1
-        bot_players = self.NUMBER_OF_PLAYERS - human_players
-        self.players = [Player('Player ' + str(i)) for i in range(1, 1 + human_players)]
-        for i in range(1, 1 + bot_players):
-            self.players.append(BotLevel1('BotLevel1_' + str(i)))
+        self.players = []
+        self.players.append(BotLevel1('xXxNooblorsxXx (beginner)'))
+        self.players.append(BotLevel1('IJustStarted (beginner)'))
+        self.players.append(BotLevel2('KILLER (intermediate)'))
+        self.players.append(BotLevel2('RoBoB (intermediate)'))
 
     def deal(self):
         '''deals the cards'''
@@ -144,6 +143,7 @@ class Game:
         return [pile.next_card() for pile in self.piles]
 
     def current_cards(self):
+        '''returns a list with the current cards on top of the piles'''
         re_val = []
         for pile in self.piles:
             if pile:

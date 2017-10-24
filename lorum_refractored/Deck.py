@@ -19,15 +19,18 @@ class Card:
         self.c_id = Card.card_id
         Card.card_id += 1
 
-    def from_string(self, string):
+    @classmethod
+    def from_string(cls, string):
         '''init from string (example: "Makk Ász")'''
         suit, number = string.split(' ')
-        self.__init__(suit, number)
+        return cls(suit, number)
 
     def __str__(self):
         return self.suit + ' ' + self.number
 
     def __eq__(self, other):
+        if other is None:
+            return False
         return self.suit == other.suit and self.number == other.number
 
     def __lt__(self, other):
