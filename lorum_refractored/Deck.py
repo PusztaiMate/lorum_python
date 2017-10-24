@@ -3,9 +3,11 @@
 import random
 
 class TooManyCards(Exception):
+    '''exception for too many cards'''
     pass
 
 class InvalidCard(Exception):
+    '''exception for invalid cards'''
     pass
 
 class Card:

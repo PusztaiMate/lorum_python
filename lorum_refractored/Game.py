@@ -56,7 +56,9 @@ class Game:
     def handle_rounds(self):
         '''handles the rest of the rounds'''
         while True:
+            print('\n')
             print(':' * 150)
+            print('\n')
             curr_player = self.players[self.on_turn]
             card = curr_player.choose_card(self)
             self.put_card_on_deck(card)
@@ -125,9 +127,9 @@ class Game:
         '''initialazing players and bots'''
         self.players = []
         self.players.append(BotLevel1('xXxNooblorsxXx (beginner)'))
-        self.players.append(BotLevel1('IJustStarted (beginner)'))
+        self.players.append(BotLevel1('IJustStarted (intermediate)'))
         self.players.append(BotLevel2('KILLER (intermediate)'))
-        self.players.append(BotLevel2('RoBoB (intermediate)'))
+        self.players.append(Player('Máté'))
 
     def deal(self):
         '''deals the cards'''

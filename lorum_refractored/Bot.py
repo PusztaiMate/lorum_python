@@ -64,8 +64,11 @@ class BotLevel1(PlayerABC):
         self.cards.append(card)
 
     def is_selling(self, highest_bid):
-        self.me_says('No points are enough!')
-        return False
+        if highest_bid > 10:
+            self.me_says('Not enough points')
+            return False
+        print('Alright, its yours for', highest_bid)
+        return True
 
     def me_says(self, message, **kwargs):
         '''printing the bots name as part of the msg '''
@@ -86,8 +89,13 @@ class BotLevel2(PlayerABC):
         '''returns the number of points the bot is willing to give
         to have the right to start'''
         possible_holes =  self.calculate_sum_dist(self.get_starting_card())
-        self.say('I give', 20 - possible_holes, 'for the right to start!')
-        return 20 - possible_holes
+        if possible_holes < 13:
+            bid = 13 - possible_holes
+        else:
+            self.say("I'll pass on this one!")
+            return 0
+        self.say('I can give you ', bid, 'for this one.')
+        return bid
 
     @property
     def name(self):
