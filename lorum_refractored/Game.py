@@ -5,7 +5,7 @@ from random import randint
 from Deck import HungarianDeck
 from Pile import Pile
 from Player import Player
-from Bot import Bot
+from Bot import BotLevel1
 
 class Game:
     """description of class"""
@@ -96,6 +96,7 @@ class Game:
 
         for player in self.players:
             print(player.name, ':', player.points, 'point(s)')
+
     def run_round(self):
         '''from dealing the cards to eval. the points'''
         game_over = False
@@ -123,11 +124,11 @@ class Game:
 
     def setup_players(self):
         '''initialazing players and bots'''
-        human_players = 0
+        human_players = 1
         bot_players = self.NUMBER_OF_PLAYERS - human_players
         self.players = [Player('Player ' + str(i)) for i in range(1, 1 + human_players)]
         for i in range(1, 1 + bot_players):
-            self.players.append(Bot('Bot' + str(i)))
+            self.players.append(BotLevel1('BotLevel1_' + str(i)))
 
     def deal(self):
         '''deals the cards'''

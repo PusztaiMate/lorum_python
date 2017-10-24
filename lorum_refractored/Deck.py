@@ -11,7 +11,7 @@ class InvalidCard(Exception):
 class Card:
     '''Card'''
 
-    card_id = 0  # to comput how 'far' 2 cards are from eachother
+    card_id = 0  # for sorting
 
     def __init__(self, suit=None, number=None):
         self.suit = suit
@@ -19,14 +19,19 @@ class Card:
         self.c_id = Card.card_id
         Card.card_id += 1
 
+    def from_string(self, string):
+        '''init from string (example: "Makk Ász")'''
+        suit, number = string.split(' ')
+        self.__init__(suit, number)
+
     def __str__(self):
         return self.suit + ' ' + self.number
 
     def __eq__(self, other):
-        return (self.suit == other.suit and self.number == other.number)
+        return self.suit == other.suit and self.number == other.number
 
     def __lt__(self, other):
-        return (self.c_id < other.c_id)
+        return  self.c_id < other.c_id
 
     def __sub__(self, other):
         if self.suit != other.suit:
@@ -35,8 +40,8 @@ class Card:
             return self.c_id - other.c_id
 
 
-
 class Deck:
+    '''deck of cards'''
     def __init__(self):
         self.cards = []
 
@@ -50,9 +55,11 @@ class Deck:
         return len(self.cards) != 0
 
     def draw(self):
+        '''draw a random card from the deck'''
         return self.cards.pop(random.randint(0, len(self) - 1))
 
     def print_cards(self, **kwargs):
+        '''print the cards in the deck'''
         for card in self.cards:
             print(card, **kwargs)
 
@@ -63,12 +70,12 @@ class HungarianDeck(Deck):
 
     def __init__(self):
         Deck.__init__(self)
-        self.cards = [Card(suit, number) for suit in HungarianDeck.suits 
+        self.cards = [Card(suit, number) for suit in HungarianDeck.suits
                       for number in HungarianDeck.numbers]
-
 
     @classmethod
     def next_card(cls, card):
+        '''gives the next card. Makk Ász -> Makk VII'''
         if card is None:
             return None
         suit = card.suit
@@ -79,6 +86,20 @@ class HungarianDeck(Deck):
             index += 1
             number = cls.numbers[index]
         return Card(suit, number)
+
+    @classmethod
+    def distance(cls, card1, card2):
+        '''returns the distance of two cards.
+        order doesn't matter(c1-c2 == c2-c1).
+        if they are different color distance() returns 0'''
+        if card1.suit != card2.suit:
+            return 0
+        else:
+            tmp = 0
+            while card1 != card2:
+                card1 = HungarianDeck.next_card(card1)
+                tmp += 1
+            return tmp
 
 if __name__ == '__main__':
     print('in main')
