@@ -70,7 +70,7 @@ class Deck:
 
 class HungarianDeck(Deck):
     '''Hungarian deck with 32 cards'''
-    suits = 'Tökk Makk Levél Szív'.split(' ')
+    suits = 'Tök Makk Levél Szív'.split(' ')
     numbers = 'VII VIII IX X Alsó Felső Király Ász'.split(' ')
 
     def __init__(self):

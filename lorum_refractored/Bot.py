@@ -17,7 +17,7 @@ class BotLevel1(PlayerABC):
         return len(self.cards)
 
     def bid(self):
-        self.me_says('Fuck you, I dont want to fucking start!')
+        self.me_says('Pass')
         return 0
 
     def choose_card(self, handler):
@@ -64,7 +64,7 @@ class BotLevel1(PlayerABC):
         self.cards.append(card)
 
     def is_selling(self, highest_bid):
-        if highest_bid > 10:
+        if highest_bid < 10:
             self.me_says('Not enough points')
             return False
         print('Alright, its yours for', highest_bid)
@@ -88,9 +88,10 @@ class BotLevel2(PlayerABC):
     def bid(self):
         '''returns the number of points the bot is willing to give
         to have the right to start'''
-        possible_holes =  self.calculate_sum_dist(self.get_starting_card())
-        if possible_holes < 13:
-            bid = 13 - possible_holes
+        TMP_name = 10
+        possible_holes = self.calculate_sum_dist(self.get_starting_card())
+        if possible_holes < TMP_name:
+            bid = int((TMP_name - possible_holes) * 1.5)
         else:
             self.say("I'll pass on this one!")
             return 0
@@ -131,7 +132,9 @@ class BotLevel2(PlayerABC):
     def choose_card(self, handler):
         '''chooses a legal card from the hand and gives it to the handler'''
         if handler.is_first_card:
-            return self.get_starting_card()
+            starting_c = self.get_starting_card()
+            self.say('Starting with:', starting_c)
+            return starting_c
         # if it's not the first round:
         possible_cards = self.get_possible_cards(handler)
         # if the bot has no options
@@ -146,18 +149,22 @@ class BotLevel2(PlayerABC):
             self.say('playing out:', chosen_card)
             return chosen_card
 
-        chosen_card = self.pick_best_card(possible_cards)
+        chosen_card = self.pick_best_card(handler, possible_cards)
         self.say('playing out:', chosen_card)
         self.cards.remove(chosen_card)
         return chosen_card
 
-    def pick_best_card(self, possible_cards):
+    def pick_best_card(self, handler, possible_cards):
         '''picks wich card to play out and returns it'''
         cards_p_suit = self.cards_per_suit()
         chosen_card = possible_cards[0]
         for ccard in possible_cards:
             if cards_p_suit[ccard.suit] > cards_p_suit[chosen_card.suit]:
                 chosen_card = ccard
+            elif cards_p_suit[ccard.suit] == cards_p_suit[chosen_card.suit]:
+                get_p_d = handler.get_piles_dict()
+                if len(get_p_d[ccard.suit]) > len(get_p_d[chosen_card.suit]):
+                    chosen_card = ccard
         return chosen_card
 
     def clear_hand(self):
@@ -172,7 +179,9 @@ class BotLevel2(PlayerABC):
         self.cards.append(card)
 
     def is_selling(self, highest_bid):
-        if highest_bid > 10:
+        possible_holes = self.calculate_sum_dist(self.get_starting_card())
+        guess_val = 13 - possible_holes
+        if highest_bid > max(guess_val * 2, 5):
             return True
         return False
 

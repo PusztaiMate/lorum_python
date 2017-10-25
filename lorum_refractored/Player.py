@@ -1,7 +1,5 @@
 ''' Player '''
 
-#TODO: chose_card()
-
 class Player:
     '''Human player. Maybe base class for bots?'''
     def __init__(self, name):
@@ -17,8 +15,8 @@ class Player:
 
     def __bool__(self):
         if self.cards:
-            return False
-        return True
+            return True
+        return False
 
     def bid(self):
         '''bid for the right to start'''
@@ -52,19 +50,19 @@ class Player:
                     return None
                 elif int(answer) in range(len(self)):
                     chosen_card = self.cards[int(answer)]
-                    if handler.legal_cards()[0] is None:  # first turn
+                    if handler.is_first_card:
                         self.cards.remove(chosen_card)
                         return chosen_card
                     elif chosen_card in handler.legal_cards():
                         self.cards.remove(chosen_card)
                         return chosen_card
                     else:
-                        print('A kártya nem rakható le, próbálj meg egy másikat.')
+                        print('Illegal card, please try again')
                         continue
+                else:
+                    print('Illegal card. Please try another one:')
+                    continue
             except Exception:
-                continue
-            else:
-                print('Kérlek próbáld újra\n Választott index: ')
                 continue
 
     def print_cards(self, **kwargs):
