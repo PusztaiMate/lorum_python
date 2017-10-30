@@ -6,6 +6,8 @@ from Deck import HungarianDeck
 from Pile import Pile
 from Player import Player
 from Bot import BotLevel1, BotLevel2
+from Graphics import Graphics
+
 
 class Game:
     """description of class"""
@@ -19,6 +21,8 @@ class Game:
         self.is_first_card = True
         self.on_turn = 0
         self.starter = randint(0, self.NUMBER_OF_PLAYERS - 1)
+
+        self.graphics = Graphics()
 
     def handle_first_card(self):
         '''handles the first round of the game'''
@@ -55,9 +59,12 @@ class Game:
             for player in self.players:
                 print(player.name, ':', player.points, 'point(s)')
 
-
     def handle_rounds(self):
         '''handles the rest of the rounds'''
+        if self.is_first_card:
+            self.handle_first_card()
+            self.is_first_card = False
+            return
         while True:
             print('\n')
             print(':' * 150)
@@ -67,6 +74,7 @@ class Game:
             self.put_card_on_deck(card)
             self.on_turn = self.next_player_index()
             # if there are no more cards left:
+
             if not curr_player:
                 return
 
@@ -152,7 +160,7 @@ class Game:
 
     def get_piles_dict(self):
         '''returns all 4 piles in a dict. the key is the suit of the pile'''
-        return {pile.suit : pile for pile in self.piles}
+        return {pile.suit: pile for pile in self.piles}
 
     def legal_cards(self):
         '''cards that can be played out'''
@@ -166,7 +174,7 @@ class Game:
                 re_val.append(pile[len(pile) - 1])
         return re_val
 
+
 if __name__ == '__main__':
     g = Game()
     g.run_round()
-    
