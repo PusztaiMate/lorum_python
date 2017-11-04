@@ -6,7 +6,6 @@ from Deck import HungarianDeck
 from Pile import Pile
 from Player import Player
 from Bot import BotLevel1, BotLevel2
-from Graphics import Graphics
 
 
 class Game:
@@ -21,8 +20,7 @@ class Game:
         self.is_first_card = True
         self.on_turn = 0
         self.starter = randint(0, self.NUMBER_OF_PLAYERS - 1)
-
-        self.graphics = Graphics()
+        self.succesful_buys = 0
 
     def handle_first_card(self):
         '''handles the first round of the game'''
@@ -56,6 +54,7 @@ class Game:
             self.players[self.on_turn].points += highest_bid
             self.players[highest_bidder].points -= highest_bid
             self.on_turn = highest_bidder
+            self.succesful_buys += 1
             for player in self.players:
                 print(player.name, ':', player.points, 'point(s)')
 
@@ -92,6 +91,7 @@ class Game:
 
     def evaluate_points(self):
         '''evaluates the points at the end of the game'''
+        # for statistics
         sum_card = 0
         winner = None
         for player in self.players:
@@ -101,7 +101,6 @@ class Game:
                 sum_card += num_of_cards
             else:
                 winner = player
-
         winner.points += sum_card
 
         for player in self.players:
@@ -125,6 +124,7 @@ class Game:
             self.evaluate_points()
             # game_over = self.ask_if_over()
             i += 1
+        print('Succesful buys:', self.succesful_buys)
 
     def reset_game(self):
         '''resetting the game to the starting position'''
@@ -145,10 +145,10 @@ class Game:
     def setup_players(self):
         '''initialazing players and bots'''
         self.players = []
-        self.players.append(BotLevel1('xXxNooblorsxXx (beginner)'))
-        # self.players.append(BotLevel1('BotLevel10 (beginner)'))
-        self.players.append(BotLevel2('IJustStarted (intermediate)'))
-        self.players.append(BotLevel2('KILLER (intermediate)'))
+        # self.players.append(BotLevel2('Const12', 12))
+        self.players.append(BotLevel2('CONST15', 15))
+        self.players.append(BotLevel2('CONST13', 13))
+        self.players.append(BotLevel2('CONST14', 14))
         self.players.append(Player('Máté'))
 
     def deal(self):

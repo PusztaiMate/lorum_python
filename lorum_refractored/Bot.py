@@ -4,10 +4,12 @@ from random import choice
 from PlayerABC import PlayerABC
 from Deck import HungarianDeck, Card
 
+
 class BotLevel1(PlayerABC):
     '''basic bot for the game.
     Doesn't sell or buy, randomly
     makes a legal move'''
+
     def __init__(self, name):
         super().__init__(name)
         self.cards = []
@@ -77,10 +79,13 @@ class BotLevel1(PlayerABC):
 
 class BotLevel2(PlayerABC):
     '''level 2 bot'''
-    def __init__(self, name):
+
+    def __init__(self, name, const=15):
         super().__init__(name)
         self.cards = []
         self.points = 0
+
+        self.CONST = const
 
     def __len__(self):
         return len(self.cards)
@@ -88,10 +93,15 @@ class BotLevel2(PlayerABC):
     def bid(self):
         '''returns the number of points the bot is willing to give
         to have the right to start'''
-        TMP_name = 10
         possible_holes = self.calculate_sum_dist(self.get_starting_card())
-        if possible_holes < TMP_name:
-            bid = int((TMP_name - possible_holes) * 1.5)
+        # accounting for colorlessness(?)
+        mult = 0
+        constant = 3
+        for k, v in self.cards_per_suit().items():
+            if v == 0:
+                mult += 1
+        if possible_holes < self.CONST:
+            bid = int(self.CONST - possible_holes * 11 / 15) - mult * constant
         else:
             self.say("I'll pass on this one!")
             return 0
@@ -134,6 +144,7 @@ class BotLevel2(PlayerABC):
         if handler.is_first_card:
             starting_c = self.get_starting_card()
             self.say('Starting with:', starting_c)
+            self.cards.remove(starting_c)
             return starting_c
         # if it's not the first round:
         possible_cards = self.get_possible_cards(handler)
@@ -180,7 +191,7 @@ class BotLevel2(PlayerABC):
 
     def is_selling(self, highest_bid):
         possible_holes = self.calculate_sum_dist(self.get_starting_card())
-        guess_val = 13 - possible_holes
+        guess_val = self.CONST - possible_holes
         if highest_bid > max(guess_val * 2, 5):
             return True
         return False
