@@ -18,8 +18,9 @@ class Player:
             return True
         return False
 
-    def bid(self):
+    def bid(self, prev_bid):
         '''bid for the right to start'''
+        print('Bid to beat: {}'.format(prev_bid))
         print(self.name, ':')
         self.print_cards(end=' | ')
         bid = input('Ajánlat a kezdésért >> ')

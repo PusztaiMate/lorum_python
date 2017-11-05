@@ -36,7 +36,7 @@ class Game:
     def handle_buy(self):
         '''handles the buying-selling of the right to start'''
         index = self.on_turn
-        highest_bid = 0
+        hb = 0
         highest_bidder = (index + 1) % self.NUMBER_OF_PLAYERS
         turn_since_hb = 0
 
@@ -45,14 +45,20 @@ class Game:
             turn_since_hb += 1
             if index != self.on_turn:
                 print()
-                player_bid = self.players[index].bid()
-                if player_bid > highest_bid:
+                player_bid = self.players[index].bid(max(5, hb))
+                if player_bid > hb:
                     highest_bidder = index
-                    highest_bid = player_bid
+                    hb = player_bid
                     turn_since_hb = 0
-        if self.players[self.on_turn].is_selling(highest_bid):
-            self.players[self.on_turn].points += highest_bid
-            self.players[highest_bidder].points -= highest_bid
+        starter_selling = self.players[self.on_turn].is_selling
+        player_bidding = self.players[highest_bidder]
+        while not starter_selling(hb):
+            hb = player_bidding.bid(hb)
+            if hb == 0:
+                break
+        if starter_selling(hb):
+            self.players[self.on_turn].points += hb
+            self.players[highest_bidder].points -= hb
             self.on_turn = highest_bidder
             self.succesful_buys += 1
             for player in self.players:

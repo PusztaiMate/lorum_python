@@ -1,4 +1,5 @@
 ''' the module that consists the bot for the game '''
+
 from collections import OrderedDict
 from random import choice
 from PlayerABC import PlayerABC
@@ -18,7 +19,7 @@ class BotLevel1(PlayerABC):
     def __len__(self):
         return len(self.cards)
 
-    def bid(self):
+    def bid(self, hb):
         self.me_says('Pass')
         return 0
 
@@ -85,17 +86,17 @@ class BotLevel2(PlayerABC):
         self.cards = []
         self.points = 0
 
-        self.CONST = const
+        self.CONST = const  # value to 'tune' the bot.
 
     def __len__(self):
         return len(self.cards)
 
-    def bid(self):
+    def bid(self, prev_bid):
         '''returns the number of points the bot is willing to give
         to have the right to start'''
         possible_holes = self.calculate_sum_dist(self.get_starting_card())
-        # accounting for colorlessness(?)
-        mult = 0
+        # if the bot lacks one or more colors:
+        mult = 0  # mult * constant times 'bad'
         constant = 3
         for k, v in self.cards_per_suit().items():
             if v == 0:
@@ -105,8 +106,13 @@ class BotLevel2(PlayerABC):
         else:
             self.say("I'll pass on this one!")
             return 0
-        self.say('I can give you ', bid, 'for this one.')
-        return bid
+        if bid > prev_bid:
+            bot_bid = prev_bid + choice((1, 1, 1, 2, 2, 3))  # not too elegant
+            self.say('I can give you {} for this one'.format(bot_bid))
+            return bot_bid
+        else:
+            self.say('I cant compete with this price. Pass!')
+            return 0
 
     @property
     def name(self):
@@ -150,18 +156,18 @@ class BotLevel2(PlayerABC):
         possible_cards = self.get_possible_cards(handler)
         # if the bot has no options
         if not possible_cards:
-            msg = choice(('Pass!', 'Go on without me!', "Resting this round"))
-            self.say(msg)
+            # msg = choice(('Pass!', 'Go on without me!', "Resting this round"))
+            self.say('Pass')
             return None
         # if we have only one option:
         if len(possible_cards) == 1:
             chosen_card = possible_cards[0]
             self.cards.remove(chosen_card)
-            self.say('playing out:', chosen_card)
+            self.say('playing out:', chosen_card, '... Card(s) left:', len(self.cards))
             return chosen_card
 
         chosen_card = self.pick_best_card(handler, possible_cards)
-        self.say('playing out:', chosen_card)
+        self.say('playing out:', chosen_card, '... Card(s) left:', len(self.cards))
         self.cards.remove(chosen_card)
         return chosen_card
 
