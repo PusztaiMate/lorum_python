@@ -1,22 +1,26 @@
 ''' the module that consists the bot for the game '''
+
 from collections import OrderedDict
 from random import choice
 from PlayerABC import PlayerABC
 from Deck import HungarianDeck, Card
 
+
 class BotLevel1(PlayerABC):
     '''basic bot for the game.
     Doesn't sell or buy, randomly
     makes a legal move'''
+
     def __init__(self, name):
         super().__init__(name)
         self.cards = []
         self.points = 0
+        self.suppress_print = False
 
     def __len__(self):
         return len(self.cards)
 
-    def bid(self):
+    def bid(self, hb):
         self.me_says('Pass')
         return 0
 
@@ -53,6 +57,7 @@ class BotLevel1(PlayerABC):
         self.me_says('Pass! Cards left:' + str(len(self.cards)))
         return None
 
+
     def clear_hand(self):
         self.cards.clear()
 
@@ -67,36 +72,51 @@ class BotLevel1(PlayerABC):
         if highest_bid < 10:
             self.me_says('Not enough points')
             return False
-        print('Alright, its yours for', highest_bid)
+        self.me_says('Alright, its yours for', highest_bid)
         return True
 
     def me_says(self, message, **kwargs):
         '''printing the bots name as part of the msg '''
-        print(self.name, ':', message, **kwargs)
+        if not self.suppress_print:
+            print(self.name, ':', message, **kwargs)
 
 
 class BotLevel2(PlayerABC):
     '''level 2 bot'''
-    def __init__(self, name):
+
+    def __init__(self, name, const=15):
         super().__init__(name)
         self.cards = []
         self.points = 0
 
+        self.CONST = const  # value to 'tune' the bot.
+        self.suppress_print = False
+
     def __len__(self):
         return len(self.cards)
 
-    def bid(self):
+    def bid(self, prev_bid):
         '''returns the number of points the bot is willing to give
         to have the right to start'''
-        TMP_name = 10
         possible_holes = self.calculate_sum_dist(self.get_starting_card())
-        if possible_holes < TMP_name:
-            bid = int((TMP_name - possible_holes) * 1.5)
+        # if the bot lacks one or more colors:
+        mult = 0  # mult * constant times 'bad'
+        constant = 3
+        for k, v in self.cards_per_suit().items():
+            if v == 0:
+                mult += 1
+        if possible_holes < self.CONST:
+            bid = int(self.CONST - possible_holes * 11 / 15) - mult * constant
         else:
             self.say("I'll pass on this one!")
             return 0
-        self.say('I can give you ', bid, 'for this one.')
-        return bid
+        if bid > prev_bid:
+            bot_bid = prev_bid + choice(range(bid - prev_bid)) + 1 # not too elegant
+            self.say('I can give you {} for this one'.format(bot_bid))
+            return bot_bid
+        else:
+            self.say('I cant compete with this price. Pass!')
+            return 0
 
     @property
     def name(self):
@@ -106,12 +126,11 @@ class BotLevel2(PlayerABC):
         '''chooses the starting card and returns it'''
         best_cards = self.best_starting_cards()
         # remove if we only have one card of the suit & it's not a big diff
-        # TODO: get statistics about this and have a better guess
+        # for future: get statistics about this and have a better guess
         lonely_suits = []
         for suit, num_of_cards in self.cards_per_suit().items():
             if num_of_cards == 1:
                 lonely_suits.append(suit)
-        # TODO: this one below
         # ~the amount of less points if we start with lonely card:
         # LONELY = 3
         # since best_cards is an OrderedDict we can do this:
@@ -134,23 +153,26 @@ class BotLevel2(PlayerABC):
         if handler.is_first_card:
             starting_c = self.get_starting_card()
             self.say('Starting with:', starting_c)
+            self.cards.remove(starting_c)
             return starting_c
         # if it's not the first round:
         possible_cards = self.get_possible_cards(handler)
         # if the bot has no options
         if not possible_cards:
-            msg = choice(('Pass!', 'Go on without me!', "Resting this round"))
-            self.say(msg)
+            # msg = choice(('Pass!', 'Go on without me!', "Resting this round"))
+            self.say('Pass')
             return None
         # if we have only one option:
         if len(possible_cards) == 1:
             chosen_card = possible_cards[0]
             self.cards.remove(chosen_card)
-            self.say('playing out:', chosen_card)
+            self.say('playing out:', chosen_card,
+                     '... Card(s) left:', len(self.cards))
             return chosen_card
 
         chosen_card = self.pick_best_card(handler, possible_cards)
-        self.say('playing out:', chosen_card)
+        self.say('playing out:', chosen_card,
+                 '... Card(s) left:', len(self.cards))
         self.cards.remove(chosen_card)
         return chosen_card
 
@@ -173,14 +195,15 @@ class BotLevel2(PlayerABC):
 
     def say(self, *msg, **kwargs):
         '''appends '"NAME": ... in front of the message'''
-        print(self.name + ':', *msg, **kwargs)
+        if not self.suppress_print:
+            print(self.name + ':', *msg, **kwargs)
 
     def get_card(self, card):
         self.cards.append(card)
 
     def is_selling(self, highest_bid):
         possible_holes = self.calculate_sum_dist(self.get_starting_card())
-        guess_val = 13 - possible_holes
+        guess_val = self.CONST - possible_holes
         if highest_bid > max(guess_val * 2, 5):
             return True
         return False
