@@ -137,11 +137,21 @@ class Game:
     def setup_players(self):
         '''initialazing players and bots'''
         self.players = []
+<<<<<<< Updated upstream
         self.players.append(BotLevel1('xXxNooblorsxXx (beginner)'))
         # self.players.append(BotLevel1('BotLevel10 (beginner)'))
         self.players.append(BotLevel2('IJustStarted (intermediate)'))
         self.players.append(BotLevel2('KILLER (intermediate)'))
         self.players.append(Player('Máté'))
+=======
+        # self.players.append(BotLevel2('Const12', 12))
+        self.players.append(BotLevel2('CONST10', 10))
+        self.players.append(BotLevel2('CONST13', 13))
+        self.players.append(BotLevel2('CONST16', 16))
+        for player in self.players:
+            player.suppress_print = True
+        self.players.append(Player(name))
+>>>>>>> Stashed changes
 
     def deal(self):
         '''deals the cards'''
