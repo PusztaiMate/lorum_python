@@ -17,6 +17,15 @@ class Player:
         if self.cards:
             return True
         return False
+    
+    def possible_moves(self, game_handler):
+        '''returns the list of legal moves'''
+        pos_movs = []
+        for card in self.cards:
+            for pile in game_handler.piles:
+                if pile.next_card() == card:
+                    pos_movs.append(card)
+        return pos_movs
 
     def bid(self, prev_bid):
         '''bid for the right to start'''

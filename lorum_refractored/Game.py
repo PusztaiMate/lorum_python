@@ -15,7 +15,7 @@ class Game:
 
     def __init__(self):
         self.piles = [Pile(suit) for suit in HungarianDeck.suits]
-        self.setup_players()
+        self.setup_players('Máté')
 
         self.is_first_card = True
         self.on_turn = 0
@@ -35,7 +35,11 @@ class Game:
 
     def handle_buy(self):
         '''handles the buying-selling of the right to start'''
-        index = self.on_turn
+        self.starter = self.starter % 4
+        self.on_turn = self.starter
+        index = self.starter
+        print()
+        print('The starting right is at {}'.format(self.players[index].name))
         hb = 0
         highest_bidder = (index + 1) % self.NUMBER_OF_PLAYERS
         turn_since_hb = 0
@@ -82,6 +86,24 @@ class Game:
 
             if not curr_player:
                 return
+
+    def get_current_state(self):
+        '''returns a dictionary, with keys: piles, players
+        - players returns a list with Player objects
+        - piles return a list with the top cards on the piles
+        - points returns a dict with the player names as keys
+        and the points as values'''
+        state_dict = {}
+        top_cards = []
+        for pile in self.piles:
+            top_cards.append(pile.curr_card())
+        points = {}
+        for player in self.players:
+            points[player.name] = player.points
+        state_dict['piles'] = top_cards
+        state_dict['players'] = self.players
+        state_dict['points'] = points
+        return state_dict
 
     def put_card_on_deck(self, card):
         '''puts the card on the correct tabledeck'''
@@ -148,14 +170,16 @@ class Game:
             return False
         return True
 
-    def setup_players(self):
+    def setup_players(self, name):
         '''initialazing players and bots'''
         self.players = []
         # self.players.append(BotLevel2('Const12', 12))
         self.players.append(BotLevel2('CONST15', 15))
         self.players.append(BotLevel2('CONST13', 13))
         self.players.append(BotLevel2('CONST14', 14))
-        self.players.append(Player('Máté'))
+        for player in self.players:
+            player.suppress_print = True
+        self.players.append(Player(name))
 
     def deal(self):
         '''deals the cards'''
