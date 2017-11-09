@@ -75,9 +75,9 @@ class Game:
             self.is_first_card = False
             return
         while True:
-            print('\n')
-            print(':' * 150)
-            print('\n')
+            # print('\n')
+            # print(':' * 150)
+            # print('\n')
             curr_player = self.players[self.on_turn]
             card = curr_player.choose_card(self)
             self.put_card_on_deck(card)
@@ -153,6 +153,8 @@ class Game:
             # game_over = self.ask_if_over()
             i += 1
         print('Succesful buys:', self.succesful_buys)
+        for player in self.players:
+            player.write_data()
 
     def reset_game(self):
         '''resetting the game to the starting position'''
@@ -173,10 +175,10 @@ class Game:
     def setup_players(self, name):
         '''initialazing players and bots'''
         self.players = []
-        # self.players.append(BotLevel2('Const12', 12))
-        self.players.append(BotLevel2('CONST10', 10))
-        self.players.append(BotLevel2('CONST13', 13))
-        self.players.append(BotLevel2('CONST16', 16))
+        self.players.append(BotLevel2('Const1.5', const=1.5, const2=1))
+        self.players.append(BotLevel2('CONST2.0', const=2.0, const2=2))
+        self.players.append(BotLevel2('CONST2.5', const=2.5, const2=3))
+        # self.players.append(BotLevel2('CONST3.0', const=3.0, const2=4))
         for player in self.players:
             player.suppress_print = True
         self.players.append(Player(name))

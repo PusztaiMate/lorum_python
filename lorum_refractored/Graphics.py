@@ -351,6 +351,10 @@ class Graphics:
                     ans = wait_yes_no(self.screen,
                                       msg='Do you really want to quit?')
                     if ans:
+                        for i, player in enumerate(game_handler.players):
+                            if i != HUMANPLAYER:
+                                player.write_data('test.csv')
+                                print(player.data)
                         pygame.quit()
                         sys.exit()
                     else:

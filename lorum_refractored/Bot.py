@@ -1,10 +1,13 @@
 ''' the module that consists the bot for the game '''
 
+import csv
 from collections import OrderedDict
 from random import choice
 from PlayerABC import PlayerABC
 from Deck import HungarianDeck, Card
+from regressors import get_regressor
 
+SAVED_DATA_NUM = 100
 
 class BotLevel1(PlayerABC):
     '''basic bot for the game.
@@ -72,7 +75,7 @@ class BotLevel1(PlayerABC):
         if highest_bid < 10:
             self.me_says('Not enough points')
             return False
-        self.me_says('Alright, its yours for', highest_bid)
+        self.me_says('Alright, its yours for' + str(highest_bid))
         return True
 
     def me_says(self, message, **kwargs):
@@ -84,32 +87,50 @@ class BotLevel1(PlayerABC):
 class BotLevel2(PlayerABC):
     '''level 2 bot'''
 
-    def __init__(self, name, const=15):
+    def __init__(self, name, const=2.0, const2=2, reg_fname=None):
         super().__init__(name)
         self.cards = []
         self.points = 0
 
-        self.CONST = const  # value to 'tune' the bot.
+        self.CONST = const  # value to 'tune' the bot. (see is_selling)
+        self.CONST2 = const2 # value to tune the bot (see bid)
         self.suppress_print = False
+
+        self.data = self.setup_data()  # to csv for regressor
+        self.started_this_round = False
+        self.points_last_round = 0
+        self.wholes_in_cards = 0
+        self.number_of_colors = 0
+
+        self.regressor = self.setup_regressor(reg_fname)
 
     def __len__(self):
         return len(self.cards)
+
+    def setup_data(self, filename=None):
+        data = []
+        if filename is None:
+            filename = self.name.lower() + '.csv'
+        with open(filename, 'r') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                data.append(row)
+        return data
+
+    def setup_regressor(self, filename=None):
+        if filename is None:
+            filename = self.name.lower() + '.csv'
+        return get_regressor(filename)
+
 
     def bid(self, prev_bid):
         '''returns the number of points the bot is willing to give
         to have the right to start'''
         possible_holes = self.calculate_sum_dist(self.get_starting_card())
-        # if the bot lacks one or more colors:
-        mult = 1  # mult * constant times 'bad'
-        constant = 3
-        for k, v in self.cards_per_suit().items():
-            if v == 0:
-                mult += 1
-        if possible_holes < self.CONST:
-            bid = int(self.CONST - possible_holes * 11 / 15) - mult * constant
-        else:
-            self.say("I'll pass on this one!")
-            return 0
+        num_of_colors = self.number_of_suits()
+        # if the bot lacks one or more colors:.value
+        bid = self.regressor.predict([[possible_holes, num_of_colors]])[0]
+        bid = int(bid) + self.CONST2
         if bid > prev_bid:
             bot_bid = prev_bid + choice(range(bid - prev_bid)) + 1
             self.say('I can give you {} for this one'.format(bot_bid))
@@ -151,7 +172,11 @@ class BotLevel2(PlayerABC):
     def choose_card(self, handler):
         '''chooses a legal card from the hand and gives it to the handler'''
         if handler.is_first_card:
+            self.started_this_round = True
+            self.points_last_round = self.points
+            self.number_of_colors = self.number_of_suits()
             starting_c = self.get_starting_card()
+            self.wholes_in_cards = self.calculate_sum_dist(starting_c)
             self.say('Starting with:', starting_c)
             self.cards.remove(starting_c)
             return starting_c
@@ -191,7 +216,13 @@ class BotLevel2(PlayerABC):
 
     def clear_hand(self):
         '''clear the remaining cards from the hand'''
+        if self.started_this_round:
+            points_diff = self.points - self.points_last_round
+            self.data.append((self.wholes_in_cards,
+                              self.number_of_colors,
+                              points_diff))
         self.cards.clear()
+        self.started_this_round = False
 
     def say(self, *msg, **kwargs):
         '''appends '"NAME": ... in front of the message'''
@@ -203,10 +234,27 @@ class BotLevel2(PlayerABC):
 
     def is_selling(self, highest_bid):
         possible_holes = self.calculate_sum_dist(self.get_starting_card())
-        guess_val = self.CONST - possible_holes
-        if highest_bid > max(guess_val * 3, 5):
+        num_of_colors = self.number_of_suits()
+        bid = self.regressor.predict([[possible_holes, num_of_colors]])[0]
+        if highest_bid > max(bid * self.CONST, 5):
             return True
         return False
+
+    def write_data(self, filename=None, mode='w'):
+        self.data = self.data[-SAVED_DATA_NUM:]
+        if filename is None:
+            filename = self.name.lower() + '.csv'
+        with open(filename, mode, newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(self.data)
+
+    def number_of_suits(self):
+        cps = self.cards_per_suit()
+        sum_suits = 0
+        for suit in HungarianDeck.suits:
+            if cps[suit] != 0:
+                sum_suits += 1
+        return sum_suits
 
     def cards_per_suit(self):
         '''returns a dict: dict[suit]==number of cards per suit'''
