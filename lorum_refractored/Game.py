@@ -174,9 +174,9 @@ class Game:
         '''initialazing players and bots'''
         self.players = []
         # self.players.append(BotLevel2('Const12', 12))
-        self.players.append(BotLevel2('CONST15', 15))
+        self.players.append(BotLevel2('CONST10', 10))
         self.players.append(BotLevel2('CONST13', 13))
-        self.players.append(BotLevel2('CONST14', 14))
+        self.players.append(BotLevel2('CONST16', 16))
         for player in self.players:
             player.suppress_print = True
         self.players.append(Player(name))

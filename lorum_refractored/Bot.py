@@ -100,7 +100,7 @@ class BotLevel2(PlayerABC):
         to have the right to start'''
         possible_holes = self.calculate_sum_dist(self.get_starting_card())
         # if the bot lacks one or more colors:
-        mult = 0  # mult * constant times 'bad'
+        mult = 1  # mult * constant times 'bad'
         constant = 3
         for k, v in self.cards_per_suit().items():
             if v == 0:
@@ -111,7 +111,7 @@ class BotLevel2(PlayerABC):
             self.say("I'll pass on this one!")
             return 0
         if bid > prev_bid:
-            bot_bid = prev_bid + choice(range(bid - prev_bid)) + 1 # not too elegant
+            bot_bid = prev_bid + choice(range(bid - prev_bid)) + 1
             self.say('I can give you {} for this one'.format(bot_bid))
             return bot_bid
         else:
@@ -204,7 +204,7 @@ class BotLevel2(PlayerABC):
     def is_selling(self, highest_bid):
         possible_holes = self.calculate_sum_dist(self.get_starting_card())
         guess_val = self.CONST - possible_holes
-        if highest_bid > max(guess_val * 2, 5):
+        if highest_bid > max(guess_val * 3, 5):
             return True
         return False
 
