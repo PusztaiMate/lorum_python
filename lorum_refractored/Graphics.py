@@ -6,8 +6,8 @@ import pygame
 from Deck import HungarianDeck, Card
 from Game import Game
 
-WWIDTH = 1200
-WHEIGHT = 900
+# WWIDTH = 0
+# WHEIGHT = 0
 
 HUMANPLAYER = 3
 
@@ -41,12 +41,21 @@ class Graphics:
 
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((WWIDTH, WHEIGHT))
+        self.screen = self.init_screen()
         self.screen_rect = self.screen.get_rect()
         self.deck = []
         self.fpsclock = pygame.time.Clock()
         self.fill_up_deck()
         self.card_back = CardImage(self.screen, )
+
+    def init_screen(self):
+        info = pygame.display.Info()
+        global WWIDTH, WHEIGHT
+        WWIDTH = int(info.current_w * 0.75)
+        WHEIGHT = int(info.current_h * 0.70)
+        print('(', WWIDTH, WHEIGHT, ')')
+        return pygame.display.set_mode((WWIDTH, WHEIGHT))
+
 
     def fill_up_deck(self):
         '''fills up self.deck with Card images'''
